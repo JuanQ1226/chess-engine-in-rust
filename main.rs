@@ -1,3 +1,5 @@
+// Author: Juan Quintana
+
 use std::fmt;
 
 // Piece representation
