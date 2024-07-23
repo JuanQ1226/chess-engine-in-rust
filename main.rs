@@ -11,6 +11,21 @@ enum Piece {
     King,
 }
 
+// Piece Display
+impl fmt::Display for Piece {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let symbol = match self {
+            Piece::Pawn => "\u{F0859}",
+            Piece::Knight => "♞",
+            Piece::Bishop => "♝",
+            Piece::Rook => "♜",
+            Piece::Queen => "♛",
+            Piece::King => "♚",
+        };
+        write!(f, "{}", symbol)
+    }
+}
+
 // Color representation
 #[derive(Clone, Copy, PartialEq)]
 enum Color {
@@ -18,7 +33,7 @@ enum Color {
     Black,
 }
 
-// Piece Values
+// Piece Scores
 fn piece_value(piece: Piece) -> i32 {
     match piece {
         Piece::Pawn => 1,
@@ -147,8 +162,8 @@ impl Board {
                 return Err("Cannot take piece");
             }
             println!();
-            println!("Piece Taken!");
-            println!("White: {}, Black: {}", self.white_score, self.black_score)
+            println!("{} takes {}", piece.unwrap(), taken_piece.unwrap());
+            println!("White: {}, Black: {}", self.white_score, self.black_score);
         }
 
         self.squares[to.0][to.1].piece = piece;
@@ -188,19 +203,26 @@ impl fmt::Display for Board {
                         piece: Some(p),
                         color: Some(c),
                     } => {
-                        let symbol = match p {
-                            Piece::Pawn => 'P',
-                            Piece::Knight => 'N',
-                            Piece::Bishop => 'B',
-                            Piece::Rook => 'R',
-                            Piece::Queen => 'Q',
-                            Piece::King => 'K',
-                        };
-                        let colored_symbol = if c == Color::White {
-                            symbol.to_ascii_uppercase()
+                        let mut colored_symbol = "";
+                        if c == Color::White {
+                            colored_symbol = match p {
+                                Piece::Pawn => "\u{F0859}",
+                                Piece::Knight => "♞",
+                                Piece::Bishop => "♝",
+                                Piece::Rook => "♜",
+                                Piece::Queen => "♛",
+                                Piece::King => "♚",
+                            };
                         } else {
-                            symbol.to_ascii_lowercase()
-                        };
+                            colored_symbol = match p {
+                                Piece::Pawn => "♙",
+                                Piece::Knight => "♘",
+                                Piece::Bishop => "♗",
+                                Piece::Rook => "♖",
+                                Piece::Queen => "♕",
+                                Piece::King => "♔",
+                            };
+                        }
                         write!(f, "{} ", colored_symbol)?;
                     }
                     _ => write!(f, ". ")?,
