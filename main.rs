@@ -18,6 +18,18 @@ enum Color {
     Black,
 }
 
+// Piece Values
+fn piece_value(piece: Piece) -> i32 {
+    match piece {
+        Piece::Pawn => 1,
+        Piece::Knight => 3,
+        Piece::Bishop => 3,
+        Piece::Rook => 5,
+        Piece::Queen => 9,
+        Piece::King => 0,
+    }
+}
+
 // Square representation
 #[derive(Copy, Clone, PartialEq)]
 struct Square {
@@ -28,6 +40,8 @@ struct Square {
 // Board representation
 struct Board {
     squares: [[Square; 8]; 8],
+    black_score: i32,
+    white_score: i32,
 }
 
 impl Board {
@@ -37,9 +51,58 @@ impl Board {
                 piece: None,
                 color: None,
             }; 8]; 8],
+            black_score: 0,
+            white_score: 0,
         };
         // Initialize the board with starting positions
-        // (This is a simplified version, you'd need to add all pieces)
+        board.squares[0][1] = Square {
+            piece: Some(Piece::Knight),
+            color: Some(Color::White),
+        };
+        board.squares[0][6] = Square {
+            piece: Some(Piece::Knight),
+            color: Some(Color::White),
+        };
+        board.squares[7][1] = Square {
+            piece: Some(Piece::Knight),
+            color: Some(Color::Black),
+        };
+        board.squares[7][6] = Square {
+            piece: Some(Piece::Knight),
+            color: Some(Color::Black),
+        };
+        board.squares[0][2] = Square {
+            piece: Some(Piece::Bishop),
+            color: Some(Color::White),
+        };
+        board.squares[0][5] = Square {
+            piece: Some(Piece::Bishop),
+            color: Some(Color::White),
+        };
+        board.squares[7][2] = Square {
+            piece: Some(Piece::Bishop),
+            color: Some(Color::Black),
+        };
+        board.squares[7][5] = Square {
+            piece: Some(Piece::Bishop),
+            color: Some(Color::Black),
+        };
+        board.squares[0][3] = Square {
+            piece: Some(Piece::Queen),
+            color: Some(Color::White),
+        };
+        board.squares[7][3] = Square {
+            piece: Some(Piece::Queen),
+            color: Some(Color::Black),
+        };
+        board.squares[0][4] = Square {
+            piece: Some(Piece::King),
+            color: Some(Color::White),
+        };
+        board.squares[7][4] = Square {
+            piece: Some(Piece::King),
+            color: Some(Color::Black),
+        };
         board.squares[0][0] = Square {
             piece: Some(Piece::Rook),
             color: Some(Color::White),
@@ -56,7 +119,16 @@ impl Board {
             piece: Some(Piece::Rook),
             color: Some(Color::Black),
         };
-        // Add more piece initializations here...
+        for i in 0..8 {
+            board.squares[1][i] = Square {
+                piece: Some(Piece::Pawn),
+                color: Some(Color::White),
+            };
+            board.squares[6][i] = Square {
+                piece: Some(Piece::Pawn),
+                color: Some(Color::Black),
+            };
+        }
         board
     }
 
@@ -68,8 +140,16 @@ impl Board {
             return Err("No piece at the starting position");
         }
 
-        // Here you would add logic to check if the move is legal
-        // For simplicity, we're just moving the piece without any checks
+        // Check if we can take a piece.
+        if self.squares[to.0][to.1].piece.is_some() {
+            let taken_piece = self.take_piece(to.0, to.1);
+            if taken_piece.is_none() {
+                return Err("Cannot take piece");
+            }
+            println!();
+            println!("Piece Taken!");
+            println!("White: {}, Black: {}", self.white_score, self.black_score)
+        }
 
         self.squares[to.0][to.1].piece = piece;
         self.squares[to.0][to.1].color = color;
@@ -77,6 +157,25 @@ impl Board {
         self.squares[from.0][from.1].color = None;
 
         Ok(())
+    }
+
+    fn get_piece(&self, rank: usize, file: usize) -> Option<Piece> {
+        self.squares[rank][file].piece
+    }
+
+    fn take_piece(&mut self, rank: usize, file: usize) -> Option<Piece> {
+        let piece = self.squares[rank][file].piece;
+        let color = self.squares[rank][file].color.unwrap();
+        let points = piece_value(piece.unwrap());
+
+        match color {
+            Color::White => self.white_score += points,
+            Color::Black => self.black_score += points,
+        }
+
+        self.squares[rank][file].piece = None;
+        self.squares[rank][file].color = None;
+        piece
     }
 }
 
@@ -115,15 +214,27 @@ impl fmt::Display for Board {
 
 fn main() {
     let mut board = Board::new();
-    println!("Initial board:");
-    println!("{}", board);
+    #[warn(while_true)]
+    loop {
+        let mut input = String::new();
+        println!("{}", board);
+        println!("Enter move (e.g. e2e4): ");
+        std::io::stdin().read_line(&mut input).unwrap();
+        if input.trim() == "exit" {
+            break;
+        }
+        let from = (
+            8 - input.chars().nth(1).unwrap().to_digit(10).unwrap() as usize,
+            (input.chars().nth(0).unwrap() as u8 - b'a') as usize,
+        );
+        let to = (
+            8 - input.chars().nth(3).unwrap().to_digit(10).unwrap() as usize,
+            (input.chars().nth(2).unwrap() as u8 - b'a') as usize,
+        );
 
-    // Make a move
-    match board.make_move((0, 0), (3, 0)) {
-        Ok(()) => println!("Move made successfully"),
-        Err(e) => println!("Error making move: {}", e),
+        match board.make_move(from, to) {
+            Ok(_) => (),
+            Err(e) => println!("{}", e),
+        }
     }
-
-    println!("Board after move:");
-    println!("{}", board);
 }
