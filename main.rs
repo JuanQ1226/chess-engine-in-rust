@@ -1,4 +1,4 @@
-use std::{fmt, iter};
+use std::fmt;
 
 // Piece representation
 #[derive(Clone, Copy, PartialEq)]
