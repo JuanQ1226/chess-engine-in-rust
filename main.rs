@@ -45,17 +45,23 @@ fn piece_value(piece: Piece) -> i32 {
     }
 }
 
-fn get_legal_moves(piece: Piece, board: Board, position: (usize, usize)) -> Vec<(usize, usize)> {
+fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec<(usize, usize)> {
     let mut legal_moves = Vec::new();
     match piece {
         Piece::Pawn => {
             let mut directions = Vec::new();
-            if board.squares[position.0][position.1].color == Some(Color::White) {
+            let color = board.squares[position.0][position.1].color;
+            if color == Some(Color::White) {
                 directions = Vec::from([(1, 0), (1, 1), (1, -1), (2, 0)]);
             } else {
                 directions = Vec::from([(-1, 0), (-1, 1), (-1, -1), (-2, 0)]);
             };
             for direction in directions.iter() {
+                if (direction.0 == 2 && color == Some(Color::White) && position.0 != 1)
+                    || (direction.0 == -2 && color == Some(Color::Black) && position.0 != 6)
+                {
+                    continue;
+                }
                 let new_position = (
                     position.0 as i32 + direction.0,
                     position.1 as i32 + direction.1,
@@ -69,11 +75,11 @@ fn get_legal_moves(piece: Piece, board: Board, position: (usize, usize)) -> Vec<
                     .is_some()
                     && board.squares[new_position.0 as usize][new_position.1 as usize].color
                         != board.squares[position.0][position.1].color;
-                if (0..8).contains(&new_position.0) && (0..8).contains(&new_position.1) {
-                    if (can_capture && direction.1 != 0) || (can_move_forward && direction.1 == 0) {
-                        println!("New Position: {} {}", new_position.0, new_position.1);
-                        legal_moves.push((new_position.0 as usize, new_position.1 as usize));
-                    }
+                if ((0..8).contains(&new_position.0) && (0..8).contains(&new_position.1))
+                    && (can_capture && direction.1 != 0)
+                    || (can_move_forward && direction.1 == 0)
+                {
+                    legal_moves.push((new_position.0 as usize, new_position.1 as usize));
                 }
             }
         }
@@ -312,7 +318,27 @@ fn main() {
     // }
     let from = (6, 4);
 
-    let pawn_can_move = get_legal_moves(board.get_piece(from.0, from.1).unwrap(), board, from);
+    let mut pawn_can_move = get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
+
+    println!("{}", board);
+
+    println!("{:?}", pawn_can_move);
+
+    match board.make_move(from, (4, 4)) {
+        Ok(_) => (),
+        Err(e) => println!("{}", e),
+    }
+
+    println!("{}", board);
+
+    match board.make_move((1, 3), (3, 3)) {
+        Ok(_) => (),
+        Err(e) => println!("{}", e),
+    }
+
+    println!("{}", board);
+
+    pawn_can_move = get_legal_moves(board.get_piece(4, 4).unwrap(), &board, (4, 4));
 
     println!("{:?}", pawn_can_move);
 }
