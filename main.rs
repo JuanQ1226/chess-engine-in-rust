@@ -326,7 +326,7 @@ impl fmt::Display for Board {
 
 fn main() {
     let mut board = Board::new();
-    #[warn(while_true)]
+    // #[warn(while_true)]
     // loop {
     //     let mut input = String::new();
     //     println!("{}", board);
