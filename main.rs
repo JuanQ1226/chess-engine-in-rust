@@ -45,17 +45,19 @@ fn piece_value(piece: Piece) -> i32 {
     }
 }
 
+// Get legal moves for a piece in a given position.
 fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec<(usize, usize)> {
     let mut legal_moves = Vec::new();
+    let mut directions = Vec::new();
+    let color = board.squares[position.0][position.1].color;
+    if color == Some(Color::White) {
+        directions = Vec::from([(1, 0), (1, 1), (1, -1), (2, 0)]);
+    } else {
+        directions = Vec::from([(-1, 0), (-1, 1), (-1, -1), (-2, 0)]);
+    };
     match piece {
         Piece::Pawn => {
-            let mut directions = Vec::new();
-            let color = board.squares[position.0][position.1].color;
-            if color == Some(Color::White) {
-                directions = Vec::from([(1, 0), (1, 1), (1, -1), (2, 0)]);
-            } else {
-                directions = Vec::from([(-1, 0), (-1, 1), (-1, -1), (-2, 0)]);
-            };
+            // Get legal moves for Pawn
             for direction in directions.iter() {
                 if (direction.0 == 2 && color == Some(Color::White) && position.0 != 1)
                     || (direction.0 == -2 && color == Some(Color::Black) && position.0 != 6)
@@ -88,6 +90,34 @@ fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec
         }
         Piece::Knight => {
             // Get legal moves for Knight
+            // Knights move in an L shape
+            directions = Vec::from([
+                (2, 1),
+                (2, -1),
+                (-2, 1),
+                (-2, -1),
+                (1, 2),
+                (1, -2),
+                (-1, 2),
+                (-1, -2),
+            ]);
+            for direction in directions.iter() {
+                let new_position = (
+                    position.0 as i32 + direction.0,
+                    position.1 as i32 + direction.1,
+                );
+                if !((0..8).contains(&new_position.0) && (0..8).contains(&new_position.1)) {
+                    continue;
+                }
+                let can_take_or_move =
+                    board.squares[new_position.0 as usize][new_position.1 as usize].color != color
+                        || board.squares[new_position.0 as usize][new_position.1 as usize]
+                            .piece
+                            .is_none();
+                if can_take_or_move {
+                    legal_moves.push((new_position.0 as usize, new_position.1 as usize));
+                }
+            }
         }
         Piece::Rook => {
             // Get legal moves for Rook
@@ -116,6 +146,7 @@ struct Board {
     white_score: i32,
 }
 
+// Implementation of Chess Board Struct
 impl Board {
     fn new() -> Self {
         let mut board = Board {
@@ -251,6 +282,7 @@ impl Board {
     }
 }
 
+// Implementation of Display trait for Board
 impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for rank in (0..8).rev() {
@@ -260,6 +292,7 @@ impl fmt::Display for Board {
                         piece: Some(p),
                         color: Some(c),
                     } => {
+                        #[allow(unused_assignments)]
                         let mut colored_symbol = "";
                         if c == Color::White {
                             colored_symbol = match p {
@@ -316,29 +349,22 @@ fn main() {
     //         Err(e) => println!("{}", e),
     //     }
     // }
-    let from = (6, 4);
-
-    let mut pawn_can_move = get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
 
     println!("{}", board);
 
-    println!("{:?}", pawn_can_move);
+    let from = (0, 1);
 
-    match board.make_move(from, (4, 4)) {
-        Ok(_) => (),
-        Err(e) => println!("{}", e),
-    }
+    let knight_legal_moves = get_legal_moves(board.get_piece(0, 1).unwrap(), &board, from);
 
-    println!("{}", board);
+    println!("{:?}", knight_legal_moves);
 
-    match board.make_move((1, 3), (3, 3)) {
-        Ok(_) => (),
-        Err(e) => println!("{}", e),
-    }
+    let to = knight_legal_moves[0];
+
+    board.make_move(from, to).unwrap();
 
     println!("{}", board);
 
-    pawn_can_move = get_legal_moves(board.get_piece(4, 4).unwrap(), &board, (4, 4));
+    let knight_legal_moves = get_legal_moves(board.get_piece(to.0, to.1).unwrap(), &board, to);
 
-    println!("{:?}", pawn_can_move);
+    println!("{:?}", knight_legal_moves);
 }
