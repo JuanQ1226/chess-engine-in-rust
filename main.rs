@@ -473,3 +473,51 @@ fn main() {
 
     println!("{:?}", bishop_legal_moves);
 }
+
+mod test {
+
+    #[test]
+    fn test_board_display() {
+        /*
+        Test that the board is displayed correctly.
+
+        The board should be displayed as follows:
+        ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+        ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        . . . . . . . .
+        󰡙 󰡙 󰡙 󰡙 󰡙 󰡙 󰡙 󰡙
+        ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+
+        NOTE: The terminal's grid aligns the pieces correctly.
+        */
+        let expected = "♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ \n♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ \n. . . . . . . . \n. . . . . . . . \n. . . . . . . . \n. . . . . . . . \n󰡙 󰡙 󰡙 󰡙 󰡙 󰡙 󰡙 󰡙 \n♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ \n";
+
+        let board = super::Board::new();
+
+        assert_eq!(format!("{}", board), expected);
+    }
+
+    #[test]
+    fn test_make_move() {
+        let from = (1, 3);
+        let to = (3, 3);
+
+        let mut board = super::Board::new();
+
+        let mut no_error = bool::default();
+        match board.make_move(from, to) {
+            Ok(_) => no_error = true,
+            Err(err) => {
+                no_error = false;
+                println!("{}", err);
+            }
+        }
+
+        let moved_piece = board.get_piece(to.0, to.1);
+
+        assert!(moved_piece.is_some() == true && no_error == true);
+    }
+}
