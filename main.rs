@@ -50,13 +50,13 @@ fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec
     let mut legal_moves = Vec::new();
     let mut directions = Vec::new();
     let color = board.squares[position.0][position.1].color;
-    if color == Some(Color::White) {
-        directions = Vec::from([(1, 0), (1, 1), (1, -1), (2, 0)]);
-    } else {
-        directions = Vec::from([(-1, 0), (-1, 1), (-1, -1), (-2, 0)]);
-    };
     match piece {
         Piece::Pawn => {
+            if color == Some(Color::White) {
+                directions = Vec::from([(1, 0), (1, 1), (1, -1), (2, 0)]);
+            } else {
+                directions = Vec::from([(-1, 0), (-1, 1), (-1, -1), (-2, 0)]);
+            };
             // Get legal moves for Pawn
             for direction in directions.iter() {
                 if (direction.0 == 2 && color == Some(Color::White) && position.0 != 1)
