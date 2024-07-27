@@ -127,6 +127,34 @@ fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec
         }
         Piece::King => {
             // Get legal moves for King
+            // Kings can move in any direction by one square
+            directions = Vec::from([
+                (1, 0),
+                (1, 1),
+                (1, -1),
+                (0, 1),
+                (0, -1),
+                (-1, 0),
+                (-1, 1),
+                (-1, -1),
+            ]);
+            for direction in directions.iter() {
+                let new_position = (
+                    position.0 as i32 + direction.0,
+                    position.1 as i32 + direction.1,
+                );
+                if !((0..8).contains(&new_position.0) && (0..8).contains(&new_position.1)) {
+                    continue;
+                }
+                let can_take_or_move =
+                    board.squares[new_position.0 as usize][new_position.1 as usize].color != color
+                        || board.squares[new_position.0 as usize][new_position.1 as usize]
+                            .piece
+                            .is_none();
+                if can_take_or_move {
+                    legal_moves.push((new_position.0 as usize, new_position.1 as usize));
+                }
+            }
         }
     }
     legal_moves
@@ -363,12 +391,26 @@ fn main() {
     let from = (0, 4);
     let to = (4, 4);
 
+    println!("{}", board);
+
+    let mut king_legal_moves =
+        get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
+
+    println!("{:?}", king_legal_moves);
+
     match board.make_move(from, to) {
         Ok(_) => (),
         Err(e) => println!("{}", e),
     }
 
+    king_legal_moves = get_legal_moves(
+        board.get_piece(to.0, to.1).unwrap(),
+        &board,
+        board.white_king_position,
+    );
+
     println!("{}", board);
 
+    println!("{:?}", king_legal_moves);
     println!("{:?}", board.white_king_position);
 }
