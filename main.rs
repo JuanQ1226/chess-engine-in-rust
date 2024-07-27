@@ -144,6 +144,8 @@ struct Board {
     squares: [[Square; 8]; 8],
     black_score: i32,
     white_score: i32,
+    black_king_position: (usize, usize),
+    white_king_position: (usize, usize),
 }
 
 // Implementation of Chess Board Struct
@@ -156,6 +158,8 @@ impl Board {
             }; 8]; 8],
             black_score: 0,
             white_score: 0,
+            black_king_position: (7, 4),
+            white_king_position: (0, 4),
         };
         // Initialize the board with starting positions
         board.squares[0][1] = Square {
@@ -259,6 +263,13 @@ impl Board {
         self.squares[from.0][from.1].piece = None;
         self.squares[from.0][from.1].color = None;
 
+        if piece.unwrap() == Piece::King {
+            match color.unwrap() {
+                Color::White => self.white_king_position = to,
+                Color::Black => self.black_king_position = to,
+            }
+        }
+
         Ok(())
     }
     #[allow(dead_code)]
@@ -349,22 +360,15 @@ fn main() {
     //         Err(e) => println!("{}", e),
     //     }
     // }
+    let from = (0, 4);
+    let to = (4, 4);
+
+    match board.make_move(from, to) {
+        Ok(_) => (),
+        Err(e) => println!("{}", e),
+    }
 
     println!("{}", board);
 
-    let from = (0, 1);
-
-    let knight_legal_moves = get_legal_moves(board.get_piece(0, 1).unwrap(), &board, from);
-
-    println!("{:?}", knight_legal_moves);
-
-    let to = knight_legal_moves[0];
-
-    board.make_move(from, to).unwrap();
-
-    println!("{}", board);
-
-    let knight_legal_moves = get_legal_moves(board.get_piece(to.0, to.1).unwrap(), &board, to);
-
-    println!("{:?}", knight_legal_moves);
+    println!("{:?}", board.white_king_position);
 }
