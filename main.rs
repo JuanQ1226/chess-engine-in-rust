@@ -87,6 +87,32 @@ fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec
         }
         Piece::Bishop => {
             // Get legal moves for Bishop
+            // Bishops can move diagonally by any number of squares
+            directions = Vec::from([(1, 1), (-1, 1), (1, -1), (-1, -1)]);
+            for direction in directions.iter() {
+                let mut new_position = (
+                    position.0 as i32 + direction.0,
+                    position.1 as i32 + direction.1,
+                );
+                while (0..8).contains(&new_position.0) && (0..8).contains(&new_position.1) {
+                    let can_take_or_move =
+                        board.squares[new_position.0 as usize][new_position.1 as usize].color
+                            != color
+                            || board.squares[new_position.0 as usize][new_position.1 as usize]
+                                .piece
+                                .is_none();
+                    if can_take_or_move {
+                        legal_moves.push((new_position.0 as usize, new_position.1 as usize));
+                    }
+                    if board.squares[new_position.0 as usize][new_position.1 as usize]
+                        .piece
+                        .is_some()
+                    {
+                        break;
+                    }
+                    new_position = (new_position.0 + direction.0, new_position.1 + direction.1);
+                }
+            }
         }
         Piece::Knight => {
             // Get legal moves for Knight
@@ -415,33 +441,35 @@ fn main() {
     //         Err(e) => println!("{}", e),
     //     }
     // }
-    let from = (0, 0);
+    let from = (0, 2);
 
-    let mut rook_legal_moves =
+    let mut bishop_legal_moves =
         get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
 
-    println!("{:?}", rook_legal_moves);
+    println!("{:?}", bishop_legal_moves);
     println!("{}", board);
 
-    board.squares[1][0] = Square {
+    board.squares[1][1] = Square {
         piece: None,
         color: None,
     };
 
+    bishop_legal_moves = get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
+
     println!("{}", board);
 
-    rook_legal_moves = get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
+    println!("{:?}", bishop_legal_moves);
 
-    println!("{:?}", rook_legal_moves);
+    let to = (4, 2);
 
-    match board.make_move((0, 0), (3, 3)) {
+    match board.make_move(from, to) {
         Ok(_) => (),
         Err(e) => println!("{}", e),
     }
 
     println!("{}", board);
 
-    rook_legal_moves = get_legal_moves(board.get_piece(3, 3).unwrap(), &board, (3, 3));
+    bishop_legal_moves = get_legal_moves(board.get_piece(to.0, to.1).unwrap(), &board, to);
 
-    println!("{:?}", rook_legal_moves);
+    println!("{:?}", bishop_legal_moves);
 }
