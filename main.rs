@@ -121,6 +121,33 @@ fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec
         }
         Piece::Rook => {
             // Get legal moves for Rook
+            // Rooks can move horizontally and vertically by any number of squares
+            directions = Vec::from([(1, 0), (-1, 0), (0, 1), (0, -1)]);
+
+            for direction in directions.iter() {
+                let mut new_position = (
+                    position.0 as i32 + direction.0,
+                    position.1 as i32 + direction.1,
+                );
+                while (0..8).contains(&new_position.0) && (0..8).contains(&new_position.1) {
+                    let can_take_or_move =
+                        board.squares[new_position.0 as usize][new_position.1 as usize].color
+                            != color
+                            || board.squares[new_position.0 as usize][new_position.1 as usize]
+                                .piece
+                                .is_none();
+                    if can_take_or_move {
+                        legal_moves.push((new_position.0 as usize, new_position.1 as usize));
+                    }
+                    if board.squares[new_position.0 as usize][new_position.1 as usize]
+                        .piece
+                        .is_some()
+                    {
+                        break;
+                    }
+                    new_position = (new_position.0 + direction.0, new_position.1 + direction.1);
+                }
+            }
         }
         Piece::Queen => {
             // Get legal moves for Queen
@@ -388,29 +415,33 @@ fn main() {
     //         Err(e) => println!("{}", e),
     //     }
     // }
-    let from = (0, 4);
-    let to = (4, 4);
+    let from = (0, 0);
+
+    let mut rook_legal_moves =
+        get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
+
+    println!("{:?}", rook_legal_moves);
+    println!("{}", board);
+
+    board.squares[1][0] = Square {
+        piece: None,
+        color: None,
+    };
 
     println!("{}", board);
 
-    let mut king_legal_moves =
-        get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
+    rook_legal_moves = get_legal_moves(board.get_piece(from.0, from.1).unwrap(), &board, from);
 
-    println!("{:?}", king_legal_moves);
+    println!("{:?}", rook_legal_moves);
 
-    match board.make_move(from, to) {
+    match board.make_move((0, 0), (3, 3)) {
         Ok(_) => (),
         Err(e) => println!("{}", e),
     }
 
-    king_legal_moves = get_legal_moves(
-        board.get_piece(to.0, to.1).unwrap(),
-        &board,
-        board.white_king_position,
-    );
-
     println!("{}", board);
 
-    println!("{:?}", king_legal_moves);
-    println!("{:?}", board.white_king_position);
+    rook_legal_moves = get_legal_moves(board.get_piece(3, 3).unwrap(), &board, (3, 3));
+
+    println!("{:?}", rook_legal_moves);
 }
