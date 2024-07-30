@@ -177,6 +177,42 @@ fn get_legal_moves(piece: Piece, board: &Board, position: (usize, usize)) -> Vec
         }
         Piece::Queen => {
             // Get legal moves for Queen
+            // Queens can move in any direction by any number of squares
+            directions = Vec::from([
+                (1, 0),
+                (1, 1),
+                (1, -1),
+                (0, 1),
+                (0, -1),
+                (-1, 0),
+                (-1, 1),
+                (-1, -1),
+            ]);
+
+            for direction in directions.iter() {
+                let mut new_position = (
+                    position.0 as i32 + direction.0,
+                    position.1 as i32 + direction.1,
+                );
+                while (0..8).contains(&new_position.0) && (0..8).contains(&new_position.1) {
+                    let can_take_or_move =
+                        board.squares[new_position.0 as usize][new_position.1 as usize].color
+                            != color
+                            || board.squares[new_position.0 as usize][new_position.1 as usize]
+                                .piece
+                                .is_none();
+                    if can_take_or_move {
+                        legal_moves.push((new_position.0 as usize, new_position.1 as usize));
+                    }
+                    if board.squares[new_position.0 as usize][new_position.1 as usize]
+                        .piece
+                        .is_some()
+                    {
+                        break;
+                    }
+                    new_position = (new_position.0 + direction.0, new_position.1 + direction.1);
+                }
+            }
         }
         Piece::King => {
             // Get legal moves for King
